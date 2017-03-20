@@ -27,6 +27,16 @@
 
 #include "tlCommon.h"
 
+// For >=C++11, mark assertion_failed() with attribute [[noreturn]] and call std::terminate().
+// Or else, throw int(0) to tell the compiler that the assertion will not return.
+#if __cplusplus < 201103L
+#define ATTRIB_ASSERT TL_PUBLIC
+#define END_ASSERT throw int(0)
+#else
+#define ATTRIB_ASSERT [[noreturn]] TL_PUBLIC
+#define END_ASSERT std::terminate()
+#endif
+
 namespace tl
 {
 
@@ -34,10 +44,9 @@ namespace tl
  *  @brief The corresponding assert macro
  */
 
-TL_PUBLIC void assertion_failed (const char *filename, unsigned int line, const char *condition);
+ATTRIB_ASSERT void assertion_failed (const char *filename, unsigned int line, const char *condition);
 
-//  the throw int(0) instruction will tell the compiler that the assertion will not return
-#define tl_assert(COND) if (!(COND)) { tl::assertion_failed (__FILE__, __LINE__, #COND); throw int(0); }
+#define tl_assert(COND) if (!(COND)) { tl::assertion_failed (__FILE__, __LINE__, #COND); END_ASSERT; }
 
 } // namespace tl
 
